@@ -6,7 +6,6 @@ import authRoutes from './src/routes/authRoutes.js';
 import fileRoutes from './src/routes/fileRoutes.js';
 import dashboardRoutes from './src/routes/dashboardRoutes.js';
 
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from './src/configs/db.js';
