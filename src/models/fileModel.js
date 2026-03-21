@@ -32,3 +32,18 @@ export const getExtractedItems = async (fileId) => {
 
 	return result.rows;
 };
+
+export const getReconciliations = async (userId) => {
+	const result = await pool.query(
+		`
+		SELECT r.*, uf.original_name, bs.statement_month
+		FROM reconciliations r
+		JOIN uploaded_files uf ON uf.id = r.invoice_file_id
+		JOIN bank_statements bs ON bs.id = r.statement_id
+		WHERE uf.user_id = $1
+		ORDER BY r.created_at DESC
+`,
+		[userId],
+	);
+	return result.rows;
+};
