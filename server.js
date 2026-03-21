@@ -6,6 +6,13 @@ import authRoutes from './src/routes/authRoutes.js';
 import fileRoutes from './src/routes/fileRoutes.js';
 import dashboardRoutes from './src/routes/dashboardRoutes.js';
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import pool from './src/configs/db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 dotenv.config();
 
 if (!fs.existsSync('uploads')) {
@@ -25,6 +32,31 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+	await runMigrations();
+
+	if (!fs.existsSync('uploads')) {
+		fs.mkdirSync('uploads');
+	}
+
+	const PORT = process.env.PORT || 3000;
+	app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+};
+
+const runMigrations = async () => {
+	const migrations = [
+		'001_create_users.sql',
+		'002_create_uploaded_files.sql',
+		'003_create_extracted_items.sql',
+		'004_create_reconciliations.sql',
+	];
+
+	for (const file of migrations) {
+		const filePath = path.join(__dirname, 'migrations', file);
+		const sql = fs.readFileSync(filePath, 'utf8');
+		await pool.query(sql);
+		console.log(`Migration applied: ${file}`);
+	}
+};
+
+startServer();
