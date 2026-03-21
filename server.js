@@ -51,7 +51,7 @@ const runMigrations = async () => {
 	];
 
 	for (const file of migrations) {
-		const filePath = path.join(__dirname, 'migrations', file);
+		const filePath = path.join(__dirname, 'src/migrations', file);
 		const sql = fs.readFileSync(filePath, 'utf8');
 		await pool.query(sql);
 		console.log(`Migration applied: ${file}`);
