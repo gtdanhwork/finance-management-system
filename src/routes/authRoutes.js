@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
+
 dotenv.config();
 
 import { register, login } from '../controllers/authController.js';

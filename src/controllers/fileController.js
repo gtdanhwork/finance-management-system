@@ -1,4 +1,9 @@
-import { saveFile, getFilesByUser } from '../models/fileModel.js';
+import {
+	saveFile,
+	getFilesByUser,
+	getExtractedItems,
+} from '../models/fileModel.js';
+import processFile from '../services/extractionService.js';
 
 export const uploadFile = async (req, res) => {
 	try {
@@ -21,7 +26,24 @@ export const uploadFile = async (req, res) => {
 			storage_path: req.file.path,
 		});
 
-		res.status(201).json({ message: 'File uploaded successfully', record });
+		res.status(201).json({
+			message: 'File uploaded successfully',
+			file: record,
+		});
+
+		console.log('File record:', record);
+		console.log('Calling processFile with id:', record.id);
+
+		processFile(record.id, req.file.path, req.file.mimetype, file_type)
+			.then(() =>
+				console.log(`Extraction completed for file ${record.id}`),
+			)
+			.catch((error) =>
+				console.error(
+					`Extraction failed for file ${record.id}:`,
+					error.message,
+				),
+			);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
@@ -31,6 +53,15 @@ export const getUsersFile = async (req, res) => {
 	try {
 		const file = await getFilesByUser(req.user.userId);
 		res.json(file);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
+export const getItems = async (req, res) => {
+	try {
+		const items = await getExtractedItems(req.params.fileId);
+		res.json({ items });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}

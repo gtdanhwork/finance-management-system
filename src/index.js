@@ -1,11 +1,11 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 dotenv.config();
 
-import express from 'express';
-import cors from 'cors';
-import pool from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
-import { authMiddleware } from './middlewares/authMiddleware.js';
+const express = require('express');
+const cors = require('cors');
+const pool = require('./config/db.js');
+const authRoutes = require('./routes/authRoutes.js');
+const { authMiddleware } = require('./middlewares/authMiddleware.js');
 
 const app = express();
 
@@ -38,4 +38,3 @@ app.get('/me', authMiddleware, (req, res) =>
 		user: req.user,
 	}),
 );
-
