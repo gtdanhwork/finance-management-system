@@ -5,7 +5,7 @@ and financial reports with AI-powered data extraction.
 
 ## Live API
 
-https://nodejs-backend-ts1y.onrender.com/
+https://finance-management-system-2ke0.onrender.com
 
 ## Tech Stack
 
