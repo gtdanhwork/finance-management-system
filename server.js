@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import authRoutes from './src/routes/authRoutes.js';
 import fileRoutes from './src/routes/fileRoutes.js';
 import dashboardRoutes from './src/routes/dashboardRoutes.js';
+import { generalLimiter } from './src/middlewares/rateLimiter.js';
+import helmet from 'helmet';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,6 +22,9 @@ if (!fs.existsSync('uploads')) {
 
 const app = express();
 app.use(express.json());
+
+app.use(generalLimiter);
+app.use(helmet());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
