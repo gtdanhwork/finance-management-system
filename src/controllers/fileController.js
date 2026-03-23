@@ -17,12 +17,6 @@ export const uploadFile = async (req, res) => {
 		}
 
 		const { file_type } = req.body;
-		const allowed_type = ['invoices', 'bank statements', 'report'];
-
-		if (!allowed_type.includes(file_type)) {
-			return res.status(400).json({ error: 'Invalid file type' });
-		}
-
 		const record = await saveFile({
 			user_id: req.user.userId,
 			original_name: req.file.originalname,
