@@ -3,12 +3,16 @@ import {
 	getFilesByUser,
 	getExtractedItems,
 	getReconciliations,
+	deleteFileById,
+	getFileById,
 } from '../models/fileModel.js';
 import processFile from '../services/extractionService.js';
 import {
 	reconcileStatement,
 	saveBankStatements,
 } from '../services/reconciliationService.js';
+
+import fs from 'fs';
 
 export const uploadFile = async (req, res) => {
 	try {
@@ -59,8 +63,9 @@ export const uploadFile = async (req, res) => {
 
 export const getUsersFile = async (req, res) => {
 	try {
-		const file = await getFilesByUser(req.user.userId);
-		res.json(file);
+		const { page, limit } = req.validatedQuery;
+		const result = await getFilesByUser(req.user.userId, page, limit);
+		res.json(result);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
@@ -68,8 +73,9 @@ export const getUsersFile = async (req, res) => {
 
 export const getItems = async (req, res) => {
 	try {
-		const items = await getExtractedItems(req.params.fileId);
-		res.json({ items });
+		const { page, limit } = req.validatedQuery;
+		const result = await getExtractedItems(req.params.fileId, page, limit);
+		res.json({ result });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
@@ -79,6 +85,27 @@ export const getReconciliationResults = async (req, res) => {
 	try {
 		const result = await getReconciliations(req.user.userId);
 		res.json({ result });
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
+export const deleteFile = async (req, res) => {
+	try {
+		const { fileId } = req.params;
+
+		const file = await getFileById(fileId, req.user.userId);
+
+		if (!file) {
+			return res.status(404).json({ error: 'File not found' });
+		}
+
+		await deleteFileById(fileId, req.user.userId);
+
+		if (fs.existsSync(file.storage_path)) {
+			fs.unlinkSync(file.storage_path);
+		}
+		res.json({ message: 'File deleted successfully' });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}

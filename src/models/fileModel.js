@@ -1,3 +1,4 @@
+import { file } from 'zod';
 import pool from '../configs/db.js';
 
 export const saveFile = async ({
@@ -16,17 +17,40 @@ export const saveFile = async ({
 	return result.rows[0];
 };
 
-export const getFilesByUser = async (user_id) => {
+export const getFilesByUser = async (user_id, page = 1, limit = 10) => {
+	const offset = (page - 1) * limit;
+
 	const result = await pool.query(
-		`SELECT * FROM uploaded_files WHERE user_id = $1`,
+		`SELECT * FROM uploaded_files
+		WHERE user_id = $1
+		ORDER BY uploaded_at DESC
+		LIMIT $2 OFFSET $3`,
+		[user_id, limit, offset],
+	);
+
+	const countResult = await pool.query(
+		`SELECT COUNT(*) FROM uploaded_files WHERE user_id = $1`,
 		[user_id],
 	);
-	return result.rows;
+
+	const total = parseInt(countResult.rows[0].count, 10);
+	const totalPages = Math.ceil(total / limit);
+
+	return {
+		files: result.rows,
+		pagination: {
+			total,
+			totalPages,
+			currentPage: page,
+			hasNextPage: page < totalPages,
+			hasPrevpage: page > 1,
+		},
+	};
 };
 
 export const getExtractedItems = async (fileId) => {
 	const result = await pool.query(
-		`SELECT * FROM extracted_items WHERE file_id = $1 ORDER BY item_date ASC`,
+		`SELECT * FROM extracted_items WHERE file_id = $1`,
 		[fileId],
 	);
 
@@ -46,4 +70,25 @@ export const getReconciliations = async (userId) => {
 		[userId],
 	);
 	return result.rows;
+};
+
+export const deleteFileById = async (fileId, userId) => {
+	const result = await pool.query(
+		`
+		DELETE FROM uploaded_files
+		WHERE id = $1 AND user_id = $2
+		RETURNING *`,
+		[fileId, userId],
+	);
+	return result.rows[0];
+};
+
+export const getFileById = async (fileId, userId) => {
+	const result = await pool.query(
+		`
+		SELECT * FROM uploaded_files
+		WHERE id = $1 and user_id = $2`,
+		[fileId, userId],
+	);
+	return result.rows[0];
 };
